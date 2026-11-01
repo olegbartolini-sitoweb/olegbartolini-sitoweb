@@ -845,7 +845,7 @@ function dataISO(s) {
 function fotoURL(u) {
   u = (u || "").trim();
   const d = u.match(/drive\.google\.com\/(?:file\/d\/|open\?id=|uc\?(?:export=\w+&)?id=)([\w-]+)/);
-  if (d) return "https://lh3.googleusercontent.com/d/" + d[1];
+  if (d) return "https://lh3.googleusercontent.com/d/" + d[1] + "=w1600"; /* foto di Drive già ridimensionate */
   if (/^foto-notizie\/[\w.-]+$/.test(u)) return u; /* foto caricate insieme al sito */
   return sicuro(u);
 }
@@ -1207,23 +1207,35 @@ function chiudiAtti(daRoute) {
 }
 document.getElementById("close-atti").addEventListener("click", () => chiudiAtti());
 document.addEventListener("keydown", e => { if (e.key === "Escape" && !paginaAtti.hidden && reader.hidden) chiudiAtti(); });
+/* caricamento veloce dei fogli:
+   1) mostra subito l'ultima versione già vista su questo dispositivo;
+   2) chiede la copia tenuta da Netlify (/dati/...), e se non risponde va su Google;
+   3) se i dati sono cambiati, aggiorna la pagina. */
+const SU_NETLIFY = /^https:$/.test(location.protocol) && !window.ANTEPRIMA;
+function prendi(url, usa, errore) {
+  const gid = (url.match(/gid=(\d+)/) || [])[1] || url, chiave = "ob-foglio-" + gid;
+  let c = null; try { c = localStorage.getItem(chiave); } catch (e) {}
+  if (c) { try { usa(c); } catch (e) { c = null; } }
+  const scarica = u => fetch(u).then(r => { if (!r.ok) throw new Error(r.status); return r.text(); })
+    .then(t => { if (/^\s*</.test(t)) throw new Error("non è un foglio"); return t; });
+  const google = url + (url.includes("?") ? "&" : "?") + "t=" + Math.floor(Date.now() / 60000);
+  (SU_NETLIFY ? scarica("/dati/" + gid + ".csv").catch(() => scarica(google)) : scarica(google))
+    .then(t => { if (t === c) return; try { localStorage.setItem(chiave, t); } catch (e) {} usa(t); })
+    .catch(() => { if (!c && errore) errore(); });
+}
 if (!ATTI_CSV) disegnaAtti(ATTI_ESEMPIO);
 else {
   document.getElementById("atti-list").innerHTML = `<p class="empty">Caricamento degli atti…</p>`;
-  fetch(ATTI_CSV + (ATTI_CSV.includes("?") ? "&" : "?") + "t=" + Math.floor(Date.now() / 300000))
-    .then(r => { if (!r.ok) throw new Error(r.status); return r.text(); })
-    .then(t => disegnaAtti(attiDaFoglio(t)))
-    .catch(() => { document.getElementById("atti-list").innerHTML = `<p class="empty">Gli atti non si sono caricati. Riprova tra poco.</p>`; });
+  prendi(ATTI_CSV, t => disegnaAtti(attiDaFoglio(t)),
+    () => { document.getElementById("atti-list").innerHTML = `<p class="empty">Gli atti non si sono caricati. Riprova tra poco.</p>`; });
 }
 
 /* avvio: prima gli esempi solo se il foglio non è collegato, poi il foglio */
 if (!FOGLIO_CSV) disegna(NOTIZIE);
 else {
   document.getElementById("feat").innerHTML = `<p class="empty">Caricamento delle notizie…</p>`;
-  fetch(FOGLIO_CSV + (FOGLIO_CSV.includes("?") ? "&" : "?") + "t=" + Math.floor(Date.now() / 300000))
-    .then(r => { if (!r.ok) throw new Error(r.status); return r.text(); })
-    .then(t => disegna(daFoglio(t)))
-    .catch(() => { document.getElementById("feat").innerHTML = `<p class="empty">Le notizie non si sono caricate. Riprova tra poco.</p>`; lEl.innerHTML = ""; more.hidden = true; });
+  prendi(FOGLIO_CSV, t => disegna(daFoglio(t)),
+    () => { document.getElementById("feat").innerHTML = `<p class="empty">Le notizie non si sono caricate. Riprova tra poco.</p>`; lEl.innerHTML = ""; more.hidden = true; });
 }
 document.getElementById("close").addEventListener("click", chiudi);
 document.addEventListener("keydown", e => { if (e.key === "Escape" && !reader.hidden) chiudi(); });
@@ -1283,7 +1295,7 @@ function smista(righe) {
 if (VALORI_CSV || IMPOSTAZIONI_CSV) {
   /* la striscia dei valori resta nascosta finché i valori non arrivano: niente esempi */
   document.getElementById("a-cuore-home").hidden = true;
-  [IMPOSTAZIONI_CSV, VALORI_CSV].filter(Boolean).forEach(u => caricaCSV(u).then(smista).catch(() => {}));
+  [IMPOSTAZIONI_CSV, VALORI_CSV].filter(Boolean).forEach(u => prendi(u, t => smista(leggiCSV(t))));
 }
 
 /* utilità */

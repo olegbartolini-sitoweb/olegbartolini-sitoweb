@@ -30,7 +30,7 @@ const sicuro = u => /^https:\/\//i.test(u || "") ? u : "";
 function fotoURL(u) {
   u = (u || "").trim();
   const d = u.match(/drive\.google\.com\/(?:file\/d\/|open\?id=|uc\?(?:export=\w+&)?id=)([\w-]+)/);
-  if (d) return "https://lh3.googleusercontent.com/d/" + d[1];
+  if (d) return "https://lh3.googleusercontent.com/d/" + d[1] + "=w1200";
   if (/^foto-notizie\/[\w.-]+$/.test(u)) return SITO + "/" + u;
   return sicuro(u);
 }
