@@ -1,0 +1,14 @@
+# Siti da cui Netlify può prendere le foto per alleggerirle (Image CDN)
+[images]
+  remote_images = [
+    'https://i\.postimg\.cc/.*',
+    'https://i\.ibb\.co/.*',
+    'https://lh3\.googleusercontent\.com/.*',
+    'https://.*\.googleusercontent\.com/.*'
+  ]
+
+# le immagini fisse del sito restano in memoria nel browser per una settimana
+[[headers]]
+  for = "/img/*"
+  [headers.values]
+    Cache-Control = "public, max-age=604800"
