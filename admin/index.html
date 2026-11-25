@@ -41,6 +41,11 @@ label.campo small { font-weight: 500; color: var(--muted); }
 input[type=text], input[type=password], input[type=date], input[type=url], input[type=search], input[type=number], textarea, select {
   width: 100%; background: var(--bg); border: 2px solid transparent; border-radius: 12px; padding: 11px 13px; font-size: 16px; font-weight: 500; outline: none; }
 input:focus, textarea:focus, select:focus { border-color: var(--accent); background: var(--surface); }
+/* data: su iPhone il campo usciva dal riquadro ed era centrato */
+input[type=date] { -webkit-appearance: none; appearance: none; display: block; min-width: 0; max-width: 100%; min-height: 48px; text-align: left; }
+input[type=date]::-webkit-date-and-time-value { text-align: left; margin: 0; }
+input[type=date]::-webkit-calendar-picker-indicator { opacity: .7; }
+label.campo { min-width: 0; }
 textarea { resize: vertical; min-height: 90px; line-height: 1.5; }
 textarea.lungo { min-height: 300px; }
 .riga { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
