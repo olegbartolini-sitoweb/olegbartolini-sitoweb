@@ -32,6 +32,7 @@ function fotoURL(u) {
   const d = u.match(/drive\.google\.com\/(?:file\/d\/|open\?id=|uc\?(?:export=\w+&)?id=)([\w-]+)/);
   if (d) return "https://lh3.googleusercontent.com/d/" + d[1] + "=w1200";
   if (/^foto-notizie\/[\w.-]+$/.test(u)) return SITO + "/" + u;
+  if (/^\/foto\/[\w-]+\.(jpg|png|webp)$/.test(u)) return SITO + u;
   return sicuro(u);
 }
 const slug = s => s.toLowerCase().normalize("NFD").replace(/[̀-ͯ]/g, "").replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "").slice(0, 60);
@@ -60,8 +61,16 @@ export default async (request, context) => {
   if (pagina.status === 404) pagina = await fetch(new URL("/", url));
   let html = await pagina.text();
   try {
-    const csv = await fetch(FOGLIO_CSV, { headers: { "User-Agent": "olegbartolini.it" } }).then(r => r.ok ? r.text() : "");
-    const n = csv ? notizieDalFoglio(csv).find(x => x.id === id) : null;
+    /* prima i contenuti del pannello; se non sono ancora stati importati, il Foglio Google */
+    let n = null;
+    const p = await fetch(new URL("/api/pubblico", url)).then(r => r.ok ? r.json() : null).catch(() => null);
+    if (p && p.migrato) {
+      const x = (p.notizie || []).find(z => z.id === id);
+      if (x) n = { ...x, foto: fotoURL(x.foto) };
+    } else {
+      const csv = await fetch(FOGLIO_CSV, { headers: { "User-Agent": "olegbartolini.it" } }).then(r => r.ok ? r.text() : "");
+      n = csv ? notizieDalFoglio(csv).find(x => x.id === id) : null;
+    }
     if (n) {
       const titolo = piano(n.titolo);
       let descr = piano(n.sommario || n.testo).replace(/\s+/g, " ").trim();

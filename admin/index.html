@@ -1,0 +1,544 @@
+<!doctype html>
+<html lang="it">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="robots" content="noindex, nofollow">
+<title>Pannello · olegbartolini.it</title>
+<link rel="icon" href="/img/fdi.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@500;600;700;800&display=swap" rel="stylesheet">
+<style>
+:root {
+  --bg: #f1f3fa; --surface: #ffffff; --soft: #e6ecff; --line: #dfe3ef; --ink: #161638; --muted: #5d6280;
+  --accent: #0047ff; --accent-ink: #ffffff; --danger: #c62828; --ok: #1d7a3a; --coral: #ff5a1f;
+  --r: 16px; --shadow: 0 1px 2px rgba(20,24,60,.06), 0 6px 20px rgba(20,24,60,.06);
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) { --bg: #0e1124; --surface: #171b33; --soft: #222a52; --line: #2a3050; --ink: #eef0ff; --muted: #a3a8c8; --accent: #4d7dff; --danger: #ff6b6b; --ok: #5bd38a; }
+}
+:root[data-theme="dark"] { --bg: #0e1124; --surface: #171b33; --soft: #222a52; --line: #2a3050; --ink: #eef0ff; --muted: #a3a8c8; --accent: #4d7dff; --danger: #ff6b6b; --ok: #5bd38a; }
+* { box-sizing: border-box; }
+html, body { margin: 0; background: var(--bg); color: var(--ink); font-family: Montserrat, system-ui, -apple-system, "Segoe UI", sans-serif; font-size: 15px; line-height: 1.45; }
+[hidden] { display: none !important; }
+button, input, textarea, select { font: inherit; color: inherit; }
+a { color: var(--accent); }
+h1, h2, h3 { margin: 0; line-height: 1.2; }
+.wrap { max-width: 980px; margin: 0 auto; padding: 0 16px; }
+
+/* entrata */
+.login { min-height: 100vh; display: grid; place-items: center; padding: 24px 16px; }
+.login form { background: var(--surface); border-radius: 24px; box-shadow: var(--shadow); padding: 28px 24px; width: 100%; max-width: 380px; display: flex; flex-direction: column; gap: 14px; }
+.login .marchio { display: flex; align-items: center; gap: 12px; margin-bottom: 4px; }
+.login .marchio img { width: 46px; height: 46px; border-radius: 50%; background: #fff; }
+.login h1 { font-size: 20px; font-weight: 800; }
+.login p { margin: 0; color: var(--muted); font-size: 14px; }
+
+/* campi */
+label.campo { display: flex; flex-direction: column; gap: 6px; font-weight: 700; font-size: 13px; }
+label.campo small { font-weight: 500; color: var(--muted); }
+input[type=text], input[type=password], input[type=date], input[type=url], input[type=search], input[type=number], textarea, select {
+  width: 100%; background: var(--bg); border: 2px solid transparent; border-radius: 12px; padding: 11px 13px; font-size: 16px; font-weight: 500; outline: none; }
+input:focus, textarea:focus, select:focus { border-color: var(--accent); background: var(--surface); }
+textarea { resize: vertical; min-height: 90px; line-height: 1.5; }
+textarea.lungo { min-height: 300px; }
+.riga { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+@media (max-width: 560px) { .riga { grid-template-columns: 1fr; } }
+
+/* pulsanti */
+.btn { display: inline-flex; align-items: center; justify-content: center; gap: 8px; border: 0; cursor: pointer; border-radius: 999px; padding: 11px 18px; font-weight: 700; font-size: 14px; background: var(--soft); color: var(--ink); text-decoration: none; white-space: nowrap; }
+.btn.main { background: var(--accent); color: var(--accent-ink); }
+.btn.danger { background: transparent; color: var(--danger); box-shadow: inset 0 0 0 2px currentColor; }
+.btn.piccolo { padding: 7px 12px; font-size: 13px; }
+.btn:disabled { opacity: .55; cursor: progress; }
+.btn:focus-visible, .tab:focus-visible { outline: 3px solid var(--accent); outline-offset: 2px; }
+
+/* barra in alto */
+.barra { position: sticky; top: 0; z-index: 10; background: var(--surface); box-shadow: 0 1px 0 var(--line); }
+.barra .in { display: flex; align-items: center; gap: 12px; padding: 10px 16px; max-width: 980px; margin: 0 auto; }
+.barra img { width: 34px; height: 34px; border-radius: 50%; background: #fff; }
+.barra .tit { font-weight: 800; font-size: 15px; }
+.barra .tit small { display: block; font-weight: 600; font-size: 12px; color: var(--muted); }
+.barra .spazio { flex: 1; }
+.schede { display: flex; gap: 4px; overflow-x: auto; padding: 0 16px 8px; max-width: 980px; margin: 0 auto; scrollbar-width: none; }
+.schede::-webkit-scrollbar { display: none; }
+.tab { border: 0; background: transparent; padding: 8px 14px; border-radius: 999px; font-weight: 700; font-size: 14px; color: var(--muted); cursor: pointer; white-space: nowrap; }
+.tab[aria-selected=true] { background: var(--soft); color: var(--ink); }
+
+main { padding: 20px 0 80px; }
+.testata { display: flex; align-items: center; gap: 12px; margin-bottom: 14px; flex-wrap: wrap; }
+.testata h2 { font-size: 22px; font-weight: 800; flex: 1; }
+.scheda { background: var(--surface); border-radius: var(--r); box-shadow: var(--shadow); padding: 18px; }
+.avviso { background: #fff4d6; color: #5c4400; border-radius: var(--r); padding: 14px 16px; margin-bottom: 16px; display: flex; gap: 12px; align-items: center; flex-wrap: wrap; }
+.avviso p { margin: 0; flex: 1; min-width: 220px; }
+@media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) .avviso { background: #3a3110; color: #ffe7a3; } }
+
+/* elenchi */
+.elenco { display: flex; flex-direction: column; gap: 8px; }
+.voce { display: flex; align-items: center; gap: 12px; padding: 10px; border-radius: 14px; background: var(--surface); box-shadow: var(--shadow); cursor: pointer; border: 0; text-align: left; width: 100%; }
+.voce:hover { outline: 2px solid var(--soft); }
+.voce img, .voce .vuota { width: 58px; height: 58px; border-radius: 10px; object-fit: cover; flex: none; background: var(--soft); }
+.voce .t { display: flex; flex-direction: column; gap: 3px; min-width: 0; }
+.voce b { font-size: 15px; line-height: 1.25; overflow: hidden; text-overflow: ellipsis; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; }
+.voce small { color: var(--muted); font-size: 13px; }
+.cerca { margin-bottom: 12px; }
+.vuoto { color: var(--muted); text-align: center; padding: 30px 10px; }
+
+/* editor */
+.editor { display: flex; flex-direction: column; gap: 16px; }
+.gruppo { display: flex; flex-direction: column; gap: 12px; }
+.gruppo h3 { font-size: 15px; font-weight: 800; }
+.strumenti { display: flex; gap: 6px; flex-wrap: wrap; }
+.strumenti button { border: 0; background: var(--soft); border-radius: 8px; padding: 6px 11px; font-weight: 700; font-size: 13px; cursor: pointer; }
+.anteprima { background: var(--bg); border-radius: 12px; padding: 14px 16px; font-size: 15px; }
+.anteprima h2 { font-size: 18px; margin: 14px 0 6px; }
+.copertina { display: flex; gap: 12px; align-items: center; flex-wrap: wrap; }
+.copertina img { width: 140px; max-height: 140px; object-fit: contain; border-radius: 10px; background: var(--bg); }
+.griglia-foto { display: grid; grid-template-columns: repeat(auto-fill, minmax(96px, 1fr)); gap: 8px; }
+.griglia-foto .f { position: relative; aspect-ratio: 1; border-radius: 10px; overflow: hidden; background: var(--bg); }
+.griglia-foto img { width: 100%; height: 100%; object-fit: cover; }
+.griglia-foto button { position: absolute; top: 4px; right: 4px; border: 0; width: 28px; height: 28px; border-radius: 50%; background: rgba(0,0,0,.65); color: #fff; cursor: pointer; font-size: 15px; line-height: 1; }
+.pulsante-link { display: grid; grid-template-columns: 2fr 1fr; gap: 8px; }
+@media (max-width: 560px) { .pulsante-link { grid-template-columns: 1fr; } }
+.azioni { position: sticky; bottom: 0; display: flex; gap: 8px; flex-wrap: wrap; padding: 12px 0 calc(12px + env(safe-area-inset-bottom, 0px)); background: linear-gradient(transparent, var(--bg) 30%); }
+.azioni .spazio { flex: 1; }
+.valore { background: var(--surface); border-radius: var(--r); box-shadow: var(--shadow); padding: 14px; display: flex; flex-direction: column; gap: 10px; }
+.valore .su { display: flex; gap: 6px; justify-content: flex-end; }
+.password-nuova { background: var(--soft); border-radius: 12px; padding: 14px; font-size: 14px; }
+.password-nuova code { font-size: 18px; font-weight: 800; letter-spacing: .04em; user-select: all; }
+.registro li { padding: 8px 0; border-bottom: 1px solid var(--line); list-style: none; }
+.registro ul { margin: 0; padding: 0; }
+.registro small { color: var(--muted); display: block; }
+
+.toast { position: fixed; left: 50%; bottom: calc(18px + env(safe-area-inset-bottom, 0px)); transform: translateX(-50%); background: var(--ink); color: var(--bg); padding: 12px 18px; border-radius: 999px; font-weight: 700; font-size: 14px; z-index: 50; max-width: calc(100% - 32px); text-align: center; }
+.toast.err { background: var(--danger); color: #fff; }
+.carica { display: inline-block; width: 16px; height: 16px; border: 2px solid currentColor; border-right-color: transparent; border-radius: 50%; animation: gira .7s linear infinite; }
+@keyframes gira { to { transform: rotate(360deg); } }
+</style>
+</head>
+<body>
+
+<!-- ENTRATA -->
+<section class="login" id="schermo-login" hidden>
+  <form id="form-login">
+    <div class="marchio"><img src="/img/fdi.png" alt=""><div><h1>Pannello del sito</h1><p>olegbartolini.it</p></div></div>
+    <label class="campo">Nome utente<input type="text" name="utente" autocomplete="username" autocapitalize="none" spellcheck="false" required></label>
+    <label class="campo">Password<input type="password" name="password" autocomplete="current-password" required></label>
+    <button class="btn main" type="submit">Entra</button>
+    <p id="login-errore" role="alert"></p>
+  </form>
+</section>
+
+<!-- PANNELLO -->
+<div id="app" hidden>
+  <header class="barra">
+    <div class="in">
+      <img src="/img/fdi.png" alt="">
+      <div class="tit">Pannello <small id="chi"></small></div>
+      <div class="spazio"></div>
+      <a class="btn piccolo" href="/" target="_blank" rel="noopener">Vedi il sito ↗</a>
+    </div>
+    <nav class="schede" role="tablist" aria-label="Sezioni">
+      <button class="tab" role="tab" data-vai="notizie">Notizie</button>
+      <button class="tab" role="tab" data-vai="atti">Atti</button>
+      <button class="tab" role="tab" data-vai="testi">Testi del sito</button>
+      <button class="tab" role="tab" data-vai="valori">Valori</button>
+      <button class="tab" role="tab" data-vai="utenti" data-admin>Utenti</button>
+      <button class="tab" role="tab" data-vai="registro">Registro</button>
+      <button class="tab" role="tab" data-vai="account">Il mio account</button>
+    </nav>
+  </header>
+  <main class="wrap" id="contenuto"></main>
+</div>
+
+<div class="toast" id="toast" role="status" hidden></div>
+
+<script>
+"use strict";
+/* ================= utilità ================= */
+const $ = (s, el = document) => el.querySelector(s);
+const esc = s => String(s ?? "").replace(/[&<>"']/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
+const oggi = () => new Date(Date.now() - new Date().getTimezoneOffset() * 60000).toISOString().slice(0, 10);
+const dataBella = iso => { if (!iso) return ""; const [y, m, d] = iso.split("-"); return `${+d} ${["gen","feb","mar","apr","mag","giu","lug","ago","set","ott","nov","dic"][+m - 1]} ${y}`; };
+const ricco = t => esc(t)
+  .replace(/\*\*(?=\S)([\s\S]+?)\*\*/g, "<strong>$1</strong>")
+  .replace(/(^|[^*\w])\*(?=\S)([^*\n]+?)\*(?![*\w])/g, "$1<em>$2</em>")
+  .replace(/(^|[^\w/])_(?=\S)([^_\n]+?)_(?![\w])/g, "$1<em>$2</em>");
+const testoHTML = t => String(t || "").split(/\n\s*\n/).filter(p => p.trim()).map(p => {
+  p = p.trim();
+  if (/^## /.test(p)) return `<h2>${ricco(p.slice(3))}</h2>`;
+  if (p.split("\n").every(r => /^- /.test(r.trim()))) return `<ul>${p.split("\n").map(r => `<li>${ricco(r.trim().slice(2))}</li>`).join("")}</ul>`;
+  return `<p>${ricco(p).replace(/\n/g, "<br>")}</p>`;
+}).join("");
+/* stessa trasformazione dei link di Drive usata dal sito */
+const anteprimaFoto = u => { const d = (u || "").match(/drive\.google\.com\/(?:file\/d\/|open\?id=|uc\?(?:export=\w+&)?id=)([\w-]+)/); return d ? "https://lh3.googleusercontent.com/d/" + d[1] + "=w400" : /^\/foto\//.test(u || "") ? u.replace(/\.(\w+)$/, "-p.$1") : u; };
+
+let tt;
+function avviso(m, err) { const t = $("#toast"); t.textContent = m; t.className = "toast" + (err ? " err" : ""); t.hidden = false; clearTimeout(tt); tt = setTimeout(() => t.hidden = true, err ? 5000 : 2800); }
+
+async function api(via, dati) {
+  const r = await fetch("/api/admin/" + via, dati === undefined ? { headers: { "x-pannello": "1" } } :
+    { method: "POST", headers: { "content-type": "application/json", "x-pannello": "1" }, body: JSON.stringify(dati) });
+  let j = {}; try { j = await r.json(); } catch {}
+  if (r.status === 401 && via !== "entra" && via !== "password") { mostraLogin(); throw new Error(j.errore || "Accesso scaduto"); }
+  if (!r.ok) throw new Error(j.errore || "Errore " + r.status);
+  return j;
+}
+async function conAttesa(btn, fn) {
+  const testoBtn = btn.innerHTML; btn.disabled = true; btn.innerHTML = `<span class="carica"></span> ${testoBtn}`;
+  try { return await fn(); } catch (e) { avviso(e.message, true); } finally { btn.disabled = false; btn.innerHTML = testoBtn; }
+}
+
+/* ================= foto: ridimensionate sul telefono prima di caricarle ================= */
+async function ridimensiona(file, lato) {
+  let bmp;
+  try { bmp = await createImageBitmap(file, { imageOrientation: "from-image" }); }
+  catch { bmp = await new Promise((ok, ko) => { const i = new Image(); i.onload = () => ok(i); i.onerror = ko; i.src = URL.createObjectURL(file); }); }
+  const w0 = bmp.width, h0 = bmp.height, s = Math.min(1, lato / Math.max(w0, h0));
+  const c = document.createElement("canvas"); c.width = Math.round(w0 * s); c.height = Math.round(h0 * s);
+  const x = c.getContext("2d"); x.fillStyle = "#ffffff"; x.fillRect(0, 0, c.width, c.height); x.drawImage(bmp, 0, 0, c.width, c.height);
+  return new Promise(ok => c.toBlob(ok, "image/jpeg", 0.84));
+}
+async function caricaFoto(file) {
+  if (!/^image\//.test(file.type)) throw new Error("«" + file.name + "» non è una foto");
+  const [grande, piccola] = await Promise.all([ridimensiona(file, 1800), ridimensiona(file, 700)]);
+  const m = new FormData(); m.append("grande", grande, "grande.jpg"); m.append("piccola", piccola, "piccola.jpg");
+  const r = await fetch("/api/foto", { method: "POST", headers: { "x-pannello": "1" }, body: m });
+  const j = await r.json().catch(() => ({}));
+  if (!r.ok) throw new Error(j.errore || "Caricamento non riuscito");
+  return j.url;
+}
+function sceltaFile(multipli) {
+  return new Promise(ok => { const i = document.createElement("input"); i.type = "file"; i.accept = "image/*"; i.multiple = !!multipli; i.onchange = () => ok([...i.files]); i.click(); });
+}
+
+/* ================= stato ================= */
+let IO = null, DATI = null, scheda = "notizie";
+const C = () => $("#contenuto");
+
+function mostraLogin() { $("#app").hidden = true; $("#schermo-login").hidden = false; setTimeout(() => $("#form-login [name=utente]").focus(), 50); }
+async function avvia() {
+  try { IO = (await api("io")).utente; } catch { mostraLogin(); return; }
+  $("#schermo-login").hidden = true; $("#app").hidden = false;
+  $("#chi").textContent = IO.nome + (IO.ruolo === "admin" ? " · amministratore" : " · collaboratore");
+  document.querySelectorAll("[data-admin]").forEach(b => b.hidden = IO.ruolo !== "admin");
+  await ricarica();
+  vai(location.hash.slice(1) || "notizie");
+}
+async function ricarica() { DATI = await api("dati"); }
+
+$("#form-login").addEventListener("submit", async e => {
+  e.preventDefault(); const f = e.target, b = f.querySelector("button");
+  $("#login-errore").textContent = "";
+  await conAttesa(b, async () => {
+    try { await api("entra", { utente: f.utente.value, password: f.password.value }); f.password.value = ""; $("#toast").hidden = true; avvia(); }
+    catch (err) { $("#login-errore").textContent = err.message; throw err; }
+  });
+});
+
+document.querySelectorAll(".tab").forEach(t => t.addEventListener("click", () => vai(t.dataset.vai)));
+window.addEventListener("hashchange", () => { const h = location.hash.slice(1); if (h && h !== scheda) vai(h); });
+function vai(nome) {
+  if (!SEZIONI[nome] || (nome === "utenti" && IO.ruolo !== "admin")) nome = "notizie";
+  scheda = nome; if (location.hash.slice(1) !== nome) history.replaceState(null, "", "#" + nome);
+  document.querySelectorAll(".tab").forEach(t => t.setAttribute("aria-selected", t.dataset.vai === nome));
+  window.scrollTo(0, 0);
+  SEZIONI[nome]();
+}
+function bannerImporta() {
+  if (DATI.migrato) return "";
+  return `<div class="avviso"><p><b>I contenuti sono ancora nel Foglio Google.</b> ${IO.ruolo === "admin" ? "Importali qui una volta sola: da quel momento il sito userà il pannello." : "L'amministratore deve importarli prima che tu possa pubblicare."}</p>${IO.ruolo === "admin" ? `<button class="btn main" id="importa">Importa dal Foglio</button>` : ""}</div>`;
+}
+function collegaImporta() {
+  const b = $("#importa"); if (!b) return;
+  b.onclick = () => conAttesa(b, async () => {
+    const r = await api("importa", {});
+    await ricarica(); avviso(`Importate ${r.notizie} notizie, ${r.atti} atti e ${r.valori} valori`); vai(scheda);
+  });
+}
+
+/* ================= NOTIZIE ================= */
+const SEZIONI = {};
+let filtroNotizie = "";
+SEZIONI.notizie = () => {
+  const lista = [...DATI.notizie].sort((a, b) => b.data.localeCompare(a.data));
+  C().innerHTML = `${bannerImporta()}
+    <div class="testata"><h2>Notizie</h2><button class="btn main" id="nuova">+ Nuova notizia</button></div>
+    <input class="cerca" type="search" id="cerca" placeholder="Cerca tra ${lista.length} notizie…" value="${esc(filtroNotizie)}">
+    <div class="elenco" id="elenco"></div>`;
+  collegaImporta();
+  const disegnaElenco = () => {
+    const q = filtroNotizie.toLowerCase();
+    const v = lista.filter(n => !q || (n.titolo + " " + n.tema).toLowerCase().includes(q));
+    $("#elenco").innerHTML = v.length ? v.map(n => `<button class="voce" data-id="${esc(n.id)}">${n.foto ? `<img src="${esc(anteprimaFoto(n.foto))}" alt="" loading="lazy">` : `<span class="vuota"></span>`}<span class="t"><b>${esc(n.titolo)}</b><small>${dataBella(n.data)} · ${esc(n.tema)}${n.autore ? " · " + esc(n.autore) : ""}</small></span></button>`).join("")
+      : `<p class="vuoto">${DATI.migrato ? "Nessuna notizia." : "Le notizie compariranno qui dopo l'importazione."}</p>`;
+  };
+  disegnaElenco();
+  $("#cerca").oninput = e => { filtroNotizie = e.target.value; disegnaElenco(); };
+  $("#elenco").onclick = e => { const b = e.target.closest(".voce"); if (b) editorNotizia(DATI.notizie.find(n => n.id === b.dataset.id)); };
+  $("#nuova").onclick = () => editorNotizia(null);
+  if (!DATI.migrato) $("#nuova").disabled = true;
+};
+
+function editorNotizia(n) {
+  const nuova = !n;
+  n = n ? JSON.parse(JSON.stringify(n)) : { data: oggi(), tema: "", titolo: "", sommario: "", testo: "", foto: "", galleria: [], link: [] };
+  while (n.link.length < 3) n.link.push({ url: "", txt: "" });
+  const temi = [...new Set(DATI.notizie.map(x => x.tema).filter(Boolean))].sort();
+  C().innerHTML = `
+    <div class="testata"><button class="btn piccolo" id="indietro">← Notizie</button><h2>${nuova ? "Nuova notizia" : "Modifica notizia"}</h2></div>
+    <form class="editor" id="ed" autocomplete="off">
+      <div class="scheda gruppo">
+        <div class="riga">
+          <label class="campo">Data<input type="date" name="data" value="${esc(n.data)}" required></label>
+          <label class="campo">Argomento<input type="text" name="tema" list="temi" value="${esc(n.tema)}" placeholder="Es. Viabilità" required><small>Scegli tra quelli esistenti per non creare doppioni.</small></label>
+        </div>
+        <datalist id="temi">${temi.map(t => `<option value="${esc(t)}">`).join("")}</datalist>
+        <label class="campo">Titolo<input type="text" name="titolo" value="${esc(n.titolo)}" required></label>
+        <label class="campo">Sommario <small>Una o due frasi: compaiono nell'anteprima quando la notizia viene condivisa.</small><textarea name="sommario" rows="2">${esc(n.sommario)}</textarea></label>
+      </div>
+      <div class="scheda gruppo">
+        <h3>Testo</h3>
+        <div class="strumenti" role="toolbar" aria-label="Formattazione">
+          <button type="button" data-f="b" title="Grassetto"><b>G</b> grassetto</button>
+          <button type="button" data-f="i" title="Corsivo"><i>C</i> corsivo</button>
+          <button type="button" data-f="h">Titoletto</button>
+          <button type="button" data-f="l">• Elenco</button>
+          <button type="button" data-f="v" id="vedi">Anteprima</button>
+        </div>
+        <textarea class="lungo" name="testo" placeholder="Scrivi qui. Lascia una riga vuota tra un paragrafo e l'altro.">${esc(n.testo)}</textarea>
+        <div class="anteprima" id="ant" hidden></div>
+      </div>
+      <div class="scheda gruppo">
+        <h3>Foto di copertina</h3>
+        <div class="copertina" id="cop"></div>
+        <div class="strumenti"><button type="button" class="btn piccolo" id="cop-carica">Carica foto</button><button type="button" class="btn piccolo" id="cop-link">Incolla un link</button><button type="button" class="btn piccolo" id="cop-togli">Togli</button></div>
+      </div>
+      <div class="scheda gruppo">
+        <h3>Altre foto <small style="font-weight:500;color:var(--muted)">(in fondo all'articolo)</small></h3>
+        <div class="griglia-foto" id="gal"></div>
+        <div class="strumenti"><button type="button" class="btn piccolo" id="gal-carica">Aggiungi foto</button><button type="button" class="btn piccolo" id="gal-link">Incolla un link</button></div>
+      </div>
+      <div class="scheda gruppo">
+        <h3>Pulsanti in fondo all'articolo</h3>
+        ${n.link.map((l, i) => `<div class="pulsante-link"><input type="url" name="url${i}" value="${esc(l.url)}" placeholder="Link ${i + 1} (https://…)"><input type="text" name="txt${i}" value="${esc(l.txt)}" placeholder="Scritta, es. Firma qui"></div>`).join("")}
+        <small style="color:var(--muted)">Se lasci vuota la scritta, il sito ne sceglie una adatta al link.</small>
+      </div>
+      <div class="azioni">
+        <button class="btn main" type="submit">${nuova ? "Pubblica" : "Salva e pubblica"}</button>
+        ${nuova ? "" : `<a class="btn" href="/#${esc(n.id)}" target="_blank" rel="noopener">Vedi sul sito ↗</a>`}
+        <span class="spazio"></span>
+        ${nuova ? "" : `<button class="btn danger" type="button" id="elimina">Elimina</button>`}
+      </div>
+    </form>`;
+  const f = $("#ed");
+  let cambiato = false; f.addEventListener("input", () => cambiato = true);
+  $("#indietro").onclick = () => { if (!cambiato || confirm("Uscire senza salvare le modifiche?")) vai("notizie"); };
+
+  /* formattazione del testo */
+  const ta = f.testo;
+  f.querySelector(".strumenti").onclick = e => {
+    const b = e.target.closest("button"); if (!b) return;
+    if (b.dataset.f === "v") { const a = $("#ant"); a.hidden = !a.hidden; ta.hidden = !a.hidden; a.innerHTML = testoHTML(ta.value) || "<p>Niente da mostrare.</p>"; b.textContent = a.hidden ? "Anteprima" : "Torna a scrivere"; return; }
+    const s = ta.selectionStart, e2 = ta.selectionEnd, sel = ta.value.slice(s, e2);
+    let prima = "", dopo = "", nuovo = sel;
+    if (b.dataset.f === "b") { prima = "**"; dopo = "**"; nuovo = sel || "testo in grassetto"; }
+    if (b.dataset.f === "i") { prima = "*"; dopo = "*"; nuovo = sel || "testo in corsivo"; }
+    if (b.dataset.f === "h") { prima = (s && ta.value[s - 1] !== "\n" ? "\n\n" : "") + "## "; dopo = "\n\n"; nuovo = sel || "Titoletto"; }
+    if (b.dataset.f === "l") { prima = s && ta.value[s - 1] !== "\n" ? "\n\n" : ""; nuovo = (sel || "primo punto\nsecondo punto").split("\n").map(r => "- " + r.replace(/^- /, "")).join("\n"); dopo = "\n\n"; }
+    ta.setRangeText(prima + nuovo + dopo, s, e2, "end");
+    ta.setSelectionRange(s + prima.length, s + prima.length + nuovo.length); ta.focus(); cambiato = true;
+  };
+
+  /* copertina */
+  const disegnaCop = () => { $("#cop").innerHTML = n.foto ? `<img src="${esc(anteprimaFoto(n.foto))}" alt="Copertina">` : `<span style="color:var(--muted)">Nessuna foto.</span>`; $("#cop-togli").hidden = !n.foto; };
+  disegnaCop();
+  $("#cop-carica").onclick = async () => { const [file] = await sceltaFile(false); if (!file) return; await conAttesa($("#cop-carica"), async () => { n.foto = await caricaFoto(file); cambiato = true; disegnaCop(); }); };
+  $("#cop-link").onclick = () => { const u = prompt("Incolla il link della foto (ImgBB, Postimages, Google Drive):", n.foto && !/^\/foto\//.test(n.foto) ? n.foto : ""); if (u === null) return; if (u && !/^https:\/\//.test(u.trim())) return avviso("Il link deve iniziare con https://", true); n.foto = u.trim(); cambiato = true; disegnaCop(); };
+  $("#cop-togli").onclick = () => { n.foto = ""; cambiato = true; disegnaCop(); };
+
+  /* altre foto */
+  const disegnaGal = () => { $("#gal").innerHTML = n.galleria.map((u, i) => `<div class="f"><img src="${esc(anteprimaFoto(u))}" alt=""><button type="button" data-i="${i}" aria-label="Togli la foto">×</button></div>`).join(""); };
+  disegnaGal();
+  $("#gal").onclick = e => { const b = e.target.closest("button[data-i]"); if (b) { n.galleria.splice(+b.dataset.i, 1); cambiato = true; disegnaGal(); } };
+  $("#gal-carica").onclick = async () => {
+    const files = await sceltaFile(true); if (!files.length) return;
+    await conAttesa($("#gal-carica"), async () => { for (const file of files) { n.galleria.push(await caricaFoto(file)); disegnaGal(); } cambiato = true; });
+  };
+  $("#gal-link").onclick = () => { const u = prompt("Incolla il link della foto:"); if (!u) return; if (!/^https:\/\//.test(u.trim())) return avviso("Il link deve iniziare con https://", true); n.galleria.push(u.trim()); cambiato = true; disegnaGal(); };
+
+  /* salvataggio */
+  f.onsubmit = e => {
+    e.preventDefault();
+    const b = f.querySelector("button[type=submit]");
+    const dati = { ...n, data: f.data.value, tema: f.tema.value, titolo: f.titolo.value, sommario: f.sommario.value, testo: f.testo.value,
+      link: [0, 1, 2].map(i => ({ url: f["url" + i].value.trim(), txt: f["txt" + i].value.trim() })).filter(l => l.url) };
+    if (dati.link.some(l => !/^https:\/\//.test(l.url))) return avviso("I link dei pulsanti devono iniziare con https://", true);
+    conAttesa(b, async () => {
+      const r = await api("notizia", { notizia: dati });
+      await ricarica(); cambiato = false;
+      avviso(nuova ? "Notizia pubblicata" : "Modifiche pubblicate");
+      editorNotizia(DATI.notizie.find(x => x.id === r.notizia.id));
+    });
+  };
+  const el = $("#elimina");
+  if (el) el.onclick = () => { if (!confirm("Eliminare questa notizia dal sito? Non si può annullare.")) return; conAttesa(el, async () => { await api("notizia/elimina", { id: n.id }); await ricarica(); avviso("Notizia eliminata"); vai("notizie"); }); };
+}
+
+/* ================= ATTI ================= */
+SEZIONI.atti = () => {
+  const lista = [...DATI.atti].sort((a, b) => b.data.localeCompare(a.data));
+  C().innerHTML = `${bannerImporta()}
+    <div class="testata"><h2>Atti</h2><button class="btn main" id="nuovo">+ Nuovo atto</button></div>
+    <div class="elenco">${lista.length ? lista.map(a => `<button class="voce" data-id="${esc(a.id)}"><span class="t"><b>${esc(a.titolo)}</b><small>${dataBella(a.data)} · ${esc(a.tipo)}${a.esito ? " · " + esc(a.esito) : ""}</small></span></button>`).join("") : `<p class="vuoto">Nessun atto.</p>`}</div>`;
+  collegaImporta();
+  C().querySelector(".elenco").onclick = e => { const b = e.target.closest(".voce"); if (b) editorAtto(DATI.atti.find(a => a.id === b.dataset.id)); };
+  $("#nuovo").onclick = () => editorAtto(null);
+  if (!DATI.migrato) $("#nuovo").disabled = true;
+};
+function editorAtto(a) {
+  const nuovo = !a;
+  a = a ? { ...a } : { data: oggi(), tipo: "", titolo: "", descrizione: "", esito: "", pdf: "" };
+  C().innerHTML = `
+    <div class="testata"><button class="btn piccolo" id="indietro">← Atti</button><h2>${nuovo ? "Nuovo atto" : "Modifica atto"}</h2></div>
+    <form class="editor" id="ed" autocomplete="off"><div class="scheda gruppo">
+      <div class="riga">
+        <label class="campo">Data di presentazione<input type="date" name="data" value="${esc(a.data)}" required></label>
+        <label class="campo">Tipo<input type="text" name="tipo" list="tipi" value="${esc(a.tipo)}" required><small>Interrogazioni, mozioni e ordini del giorno si contano da soli; tutto il resto va negli atti ispettivi.</small></label>
+      </div>
+      <datalist id="tipi"><option value="Mozione"><option value="Interrogazione"><option value="Interrogazione a risposta scritta"><option value="Ordine del giorno"><option value="Accesso agli atti"></datalist>
+      <label class="campo">Titolo<input type="text" name="titolo" value="${esc(a.titolo)}" required></label>
+      <label class="campo">Descrizione <small>Una riga che spiega cosa chiede.</small><textarea name="descrizione" rows="3">${esc(a.descrizione)}</textarea></label>
+      <div class="riga">
+        <label class="campo">Esito<input type="text" name="esito" list="esiti" value="${esc(a.esito)}"><small>Vuoto se in attesa.</small></label>
+        <label class="campo">Link al PDF<input type="url" name="pdf" value="${esc(a.pdf)}" placeholder="https://drive.google.com/…"></label>
+      </div>
+      <datalist id="esiti"><option value="Approvato"><option value="Respinto"><option value="Risposta ricevuta"><option value="Ritirato"></datalist>
+    </div>
+    <div class="azioni"><button class="btn main" type="submit">${nuovo ? "Aggiungi" : "Salva"}</button><span class="spazio"></span>${nuovo ? "" : `<button class="btn danger" type="button" id="elimina">Elimina</button>`}</div>
+    </form>`;
+  const f = $("#ed");
+  $("#indietro").onclick = () => vai("atti");
+  f.onsubmit = e => {
+    e.preventDefault();
+    if (f.pdf.value.trim() && !/^https:\/\//.test(f.pdf.value.trim())) return avviso("Il link deve iniziare con https://", true);
+    conAttesa(f.querySelector("button[type=submit]"), async () => {
+      await api("atto", { atto: { id: a.id, data: f.data.value, tipo: f.tipo.value, titolo: f.titolo.value, descrizione: f.descrizione.value, esito: f.esito.value, pdf: f.pdf.value.trim() } });
+      await ricarica(); avviso(nuovo ? "Atto aggiunto" : "Atto salvato"); vai("atti");
+    });
+  };
+  const el = $("#elimina");
+  if (el) el.onclick = () => { if (!confirm("Eliminare questo atto?")) return; conAttesa(el, async () => { await api("atto/elimina", { id: a.id }); await ricarica(); avviso("Atto eliminato"); vai("atti"); }); };
+}
+
+/* ================= TESTI DEL SITO ================= */
+SEZIONI.testi = () => {
+  const v = DATI.impostazioni || {};
+  const riq = i => (v["riquadro " + i] || "").split("|").map(x => x.trim());
+  C().innerHTML = `${bannerImporta()}
+    <div class="testata"><h2>Testi del sito</h2></div>
+    <form class="editor" id="ed"><div class="scheda gruppo">
+      <div class="riga">
+        <label class="campo">Etichetta blu (ruolo)<input type="text" name="ruolo" value="${esc(v.ruolo)}"></label>
+        <label class="campo">Etichetta arancione<input type="text" name="etichetta" value="${esc(v.etichetta)}"></label>
+      </div>
+      <label class="campo">Frase sotto "Ciao, sono Oleg"<input type="text" name="presentazione" value="${esc(v.presentazione)}"></label>
+      <label class="campo">Chi sono <small>Ogni riga è un paragrafo. Funzionano **grassetto** e *corsivo*.</small><textarea class="lungo" name="chi">${esc(v["chi sono"])}</textarea></label>
+    </div>
+    <div class="scheda gruppo"><h3>I quattro riquadri sotto la biografia</h3>
+      ${[1, 2, 3, 4].map(i => `<div class="riga"><label class="campo">Riquadro ${i}: numero o parola<input type="text" name="rn${i}" value="${esc(riq(i)[0])}"></label><label class="campo">Testo sotto<input type="text" name="rt${i}" value="${esc(riq(i)[1])}"></label></div>`).join("")}
+      <small style="color:var(--muted)">Un riquadro senza numero non compare.</small>
+    </div>
+    <div class="scheda gruppo"><h3>Atti ispettivi</h3>
+      <label class="campo">Numero complessivo <small>Se lo scrivi, il sito mostra questo numero; se lo lasci vuoto, li conta dagli atti inseriti.</small><input type="number" min="0" name="isp" value="${esc(v["atti ispettivi"])}"></label>
+    </div>
+    <div class="azioni"><button class="btn main" type="submit">Salva e pubblica</button></div></form>`;
+  collegaImporta();
+  const f = $("#ed");
+  if (!DATI.migrato) f.querySelector("button[type=submit]").disabled = true;
+  f.onsubmit = e => {
+    e.preventDefault();
+    const imp = { ruolo: f.ruolo.value, etichetta: f.etichetta.value, presentazione: f.presentazione.value, "chi sono": f.chi.value, "atti ispettivi": f.isp.value };
+    [1, 2, 3, 4].forEach(i => { const a = f["rn" + i].value.trim(), b = f["rt" + i].value.trim(); imp["riquadro " + i] = a ? a + " | " + b : ""; });
+    conAttesa(f.querySelector("button[type=submit]"), async () => { await api("impostazioni", { impostazioni: imp }); await ricarica(); avviso("Testi pubblicati"); });
+  };
+};
+
+/* ================= VALORI ================= */
+SEZIONI.valori = () => {
+  let lista = (DATI.valori || []).map(x => ({ ...x }));
+  const disegna = () => {
+    C().innerHTML = `${bannerImporta()}
+      <div class="testata"><h2>Valori non negoziabili</h2><button class="btn" id="agg">+ Aggiungi valore</button></div>
+      <div class="elenco" id="vals">${lista.map((x, i) => `<div class="valore" data-i="${i}">
+        <div class="su"><button class="btn piccolo" data-az="su" ${i ? "" : "disabled"} aria-label="Sposta su">↑</button><button class="btn piccolo" data-az="giu" ${i < lista.length - 1 ? "" : "disabled"} aria-label="Sposta giù">↓</button><button class="btn piccolo danger" data-az="via">Togli</button></div>
+        <label class="campo">Valore<input type="text" data-k="valore" value="${esc(x.valore)}"></label>
+        <label class="campo">Descrizione<textarea data-k="descrizione" rows="4">${esc(x.descrizione)}</textarea></label>
+        <label class="campo">Cosa propongo <small>Una proposta per riga (facoltativo).</small><textarea data-k="proposte" rows="3">${esc(x.proposte)}</textarea></label>
+      </div>`).join("") || `<p class="vuoto">Nessun valore.</p>`}</div>
+      <div class="azioni"><button class="btn main" id="salva">Salva e pubblica</button></div>`;
+    collegaImporta();
+    if (!DATI.migrato) { $("#salva").disabled = true; $("#agg").disabled = true; }
+    $("#vals").oninput = e => { const c = e.target.closest(".valore"); if (c && e.target.dataset.k) lista[+c.dataset.i][e.target.dataset.k] = e.target.value; };
+    $("#vals").onclick = e => {
+      const b = e.target.closest("button[data-az]"); if (!b) return; const i = +b.closest(".valore").dataset.i;
+      if (b.dataset.az === "via") { if (!confirm("Togliere «" + (lista[i].valore || "questo valore") + "»?")) return; lista.splice(i, 1); }
+      if (b.dataset.az === "su") [lista[i - 1], lista[i]] = [lista[i], lista[i - 1]];
+      if (b.dataset.az === "giu") [lista[i + 1], lista[i]] = [lista[i], lista[i + 1]];
+      disegna();
+    };
+    $("#agg").onclick = () => { lista.push({ valore: "", descrizione: "", proposte: "" }); disegna(); const ultimi = document.querySelectorAll(".valore input"); ultimi[ultimi.length - 1].focus(); };
+    $("#salva").onclick = () => conAttesa($("#salva"), async () => { await api("valori", { valori: lista }); await ricarica(); lista = DATI.valori.map(x => ({ ...x })); avviso("Valori pubblicati"); disegna(); });
+  };
+  disegna();
+};
+
+/* ================= UTENTI ================= */
+SEZIONI.utenti = async () => {
+  C().innerHTML = `<div class="testata"><h2>Utenti</h2></div><p class="vuoto"><span class="carica"></span></p>`;
+  let utenti;
+  try { utenti = (await api("utenti/elenco")).utenti; } catch (e) { return avviso(e.message, true); }
+  C().innerHTML = `
+    <div class="testata"><h2>Utenti</h2></div>
+    <div id="pw"></div>
+    <div class="elenco">${utenti.map(u => `<div class="voce" style="cursor:default"><span class="t" style="flex:1"><b>${esc(u.nome)}</b><small>${esc(u.utente)} · ${u.ruolo === "admin" ? "amministratore" : "collaboratore"}</small></span>
+      ${u.id === IO.id ? "<small>sei tu</small>" : `<button class="btn piccolo" data-np="${esc(u.id)}">Nuova password</button><button class="btn piccolo danger" data-el="${esc(u.id)}" data-nome="${esc(u.nome)}">Elimina</button>`}</div>`).join("")}</div>
+    <form class="scheda gruppo" id="nu" style="margin-top:18px" autocomplete="off"><h3>Aggiungi un collaboratore</h3>
+      <div class="riga"><label class="campo">Nome e cognome<input type="text" name="nome" required></label><label class="campo">Nome utente <small>Per entrare, es. mario.rossi</small><input type="text" name="utente" autocapitalize="none" required></label></div>
+      <label class="campo">Ruolo<select name="ruolo"><option value="collaboratore">Collaboratore: pubblica notizie, atti, testi e valori</option><option value="admin">Amministratore: in più gestisce gli utenti</option></select></label>
+      <div><button class="btn main" type="submit">Crea accesso</button></div>
+    </form>`;
+  const mostraPw = (utente, password) => { $("#pw").innerHTML = `<div class="password-nuova" style="margin-bottom:14px">Dai queste credenziali alla persona (le vedi solo ora):<br>Indirizzo: <b>${esc(location.origin)}/admin</b><br>Nome utente: <b>${esc(utente)}</b><br>Password: <code>${esc(password)}</code><br><small>Dopo il primo accesso potrà cambiarla da "Il mio account".</small></div>`; window.scrollTo(0, 0); };
+  $("#nu").onsubmit = e => { e.preventDefault(); const f = e.target; conAttesa(f.querySelector("button"), async () => { const r = await api("utenti/nuovo", { nome: f.nome.value, utente: f.utente.value, ruolo: f.ruolo.value }); await SEZIONI.utenti(); mostraPw(r.utente, r.password); }); };
+  C().querySelector(".elenco").onclick = e => {
+    const np = e.target.closest("[data-np]"), el = e.target.closest("[data-el]");
+    if (np && confirm("Creare una nuova password? Quella vecchia smette di funzionare.")) conAttesa(np, async () => { const r = await api("utenti/nuova-password", { id: np.dataset.np }); mostraPw(r.utente, r.password); });
+    if (el && confirm("Togliere l'accesso a " + el.dataset.nome + "?")) conAttesa(el, async () => { await api("utenti/elimina", { id: el.dataset.el }); avviso("Accesso tolto"); SEZIONI.utenti(); });
+  };
+};
+
+/* ================= REGISTRO ================= */
+SEZIONI.registro = () => {
+  const r = DATI.registro || [];
+  C().innerHTML = `<div class="testata"><h2>Registro delle modifiche</h2></div>
+    <div class="scheda registro">${r.length ? `<ul>${r.map(x => `<li>${esc(x.cosa)}<small>${esc(x.chi)} · ${new Date(x.quando).toLocaleString("it-IT", { dateStyle: "medium", timeStyle: "short" })}</small></li>`).join("")}</ul>` : `<p class="vuoto">Ancora nessuna modifica.</p>`}</div>`;
+};
+
+/* ================= ACCOUNT ================= */
+SEZIONI.account = () => {
+  C().innerHTML = `<div class="testata"><h2>Il mio account</h2></div>
+    <form class="scheda gruppo" id="cp" autocomplete="off"><h3>Cambia password</h3>
+      <label class="campo">Password attuale<input type="password" name="vecchia" autocomplete="current-password" required></label>
+      <label class="campo">Nuova password <small>Almeno 10 caratteri.</small><input type="password" name="nuova" autocomplete="new-password" minlength="10" required></label>
+      <div><button class="btn main" type="submit">Cambia password</button></div>
+    </form>
+    <div style="margin-top:18px"><button class="btn danger" id="esci">Esci dal pannello</button></div>`;
+  $("#cp").onsubmit = e => { e.preventDefault(); const f = e.target; conAttesa(f.querySelector("button"), async () => { await api("password", { vecchia: f.vecchia.value, nuova: f.nuova.value }); f.reset(); avviso("Password cambiata"); }); };
+  $("#esci").onclick = async () => { await api("esci", {}).catch(() => {}); IO = null; mostraLogin(); };
+};
+
+avvia();
+</script>
+</body>
+</html>

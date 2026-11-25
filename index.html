@@ -848,7 +848,10 @@ const SU_NETLIFY = /^https:$/.test(location.protocol) && !window.ANTEPRIMA;
    che serve e le converte in un formato più leggero (webp); se qualcosa va storto
    il browser ricarica la foto originale */
 function IMG(u, w) {
-  if (!SU_NETLIFY || !u) return u;
+  if (!u) return u;
+  /* foto del pannello: esistono già in due misure, grande e piccola (-p) */
+  if (/^\/foto\/[\w-]+\.\w+$/.test(u)) return w <= 700 ? u.replace(/\.(\w+)$/, "-p.$1") : u;
+  if (!SU_NETLIFY) return u;
   const src = /^foto-notizie\//.test(u) ? "/" + u : u;
   if (!/^(https:\/\/|\/)/.test(src)) return u;
   return "/.netlify/images?url=" + encodeURIComponent(src) + "&w=" + w + "&q=72";
@@ -860,6 +863,7 @@ function fotoURL(u) {
   const d = u.match(/drive\.google\.com\/(?:file\/d\/|open\?id=|uc\?(?:export=\w+&)?id=)([\w-]+)/);
   if (d) return "https://lh3.googleusercontent.com/d/" + d[1] + "=w1600"; /* foto di Drive già ridimensionate */
   if (/^foto-notizie\/[\w.-]+$/.test(u)) return u; /* foto caricate insieme al sito */
+  if (/^\/foto\/[\w-]+\.(jpg|png|webp)$/.test(u)) return u; /* foto caricate dal pannello */
   return sicuro(u);
 }
 const slug = s => s.toLowerCase().normalize("NFD").replace(/[̀-ͯ]/g, "").replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "").slice(0, 60);
@@ -1248,20 +1252,7 @@ function prendi(url, usa, errore) {
     .then(t => { if (t === c) return; try { localStorage.setItem(chiave, t); } catch (e) {} usa(t); })
     .catch(() => { if (!c && errore) errore(); });
 }
-if (!ATTI_CSV) disegnaAtti(ATTI_ESEMPIO);
-else {
-  document.getElementById("atti-list").innerHTML = `<p class="empty">Caricamento degli atti…</p>`;
-  prendi(ATTI_CSV, t => disegnaAtti(attiDaFoglio(t)),
-    () => { document.getElementById("atti-list").innerHTML = `<p class="empty">Gli atti non si sono caricati. Riprova tra poco.</p>`; });
-}
 
-/* avvio: prima gli esempi solo se il foglio non è collegato, poi il foglio */
-if (!FOGLIO_CSV) disegna(NOTIZIE);
-else {
-  document.getElementById("feat").innerHTML = `<p class="empty">Caricamento delle notizie…</p>`;
-  prendi(FOGLIO_CSV, t => disegna(daFoglio(t)),
-    () => { document.getElementById("feat").innerHTML = `<p class="empty">Le notizie non si sono caricate. Riprova tra poco.</p>`; lEl.innerHTML = ""; more.hidden = true; });
-}
 document.getElementById("close").addEventListener("click", chiudi);
 document.addEventListener("keydown", e => { if (e.key === "Escape" && !reader.hidden) chiudi(); });
 document.querySelectorAll(".open-privacy").forEach(b => b.addEventListener("click", () => apri(PRIVACY)));
@@ -1317,11 +1308,51 @@ function smista(righe) {
   if (h.startsWith("voce")) impostazioni(righe);
   else if (h.startsWith("valore")) valori(righe);
 }
-if (VALORI_CSV || IMPOSTAZIONI_CSV) {
-  /* la striscia dei valori resta nascosta finché i valori non arrivano: niente esempi */
-  document.getElementById("a-cuore-home").hidden = true;
-  [IMPOSTAZIONI_CSV, VALORI_CSV].filter(Boolean).forEach(u => prendi(u, t => smista(leggiCSV(t))));
+/* ===== avvio: i contenuti arrivano dal pannello (/admin); finché non sono stati importati, dal Foglio Google ===== */
+function avviaFogli() {
+  if (!ATTI_CSV) disegnaAtti(ATTI_ESEMPIO);
+  else {
+    if (!atti.length) document.getElementById("atti-list").innerHTML = `<p class="empty">Caricamento degli atti…</p>`;
+    prendi(ATTI_CSV, t => disegnaAtti(attiDaFoglio(t)),
+      () => { document.getElementById("atti-list").innerHTML = `<p class="empty">Gli atti non si sono caricati. Riprova tra poco.</p>`; });
+  }
+  if (!FOGLIO_CSV) disegna(NOTIZIE);
+  else {
+    if (!notizie.length) document.getElementById("feat").innerHTML = `<p class="empty">Caricamento delle notizie…</p>`;
+    prendi(FOGLIO_CSV, t => disegna(daFoglio(t)),
+      () => { document.getElementById("feat").innerHTML = `<p class="empty">Le notizie non si sono caricate. Riprova tra poco.</p>`; lEl.innerHTML = ""; more.hidden = true; });
+  }
+  if (VALORI_CSV || IMPOSTAZIONI_CSV) {
+    /* la striscia dei valori resta nascosta finché i valori non arrivano: niente esempi */
+    document.getElementById("a-cuore-home").hidden = true;
+    [IMPOSTAZIONI_CSV, VALORI_CSV].filter(Boolean).forEach(u => prendi(u, t => smista(leggiCSV(t))));
+  }
 }
+function usaPannello(d) {
+  disegna(d.notizie.map(n => ({ id: n.id, data: n.data, tema: n.tema || "Notizie", titolo: n.titolo, sommario: n.sommario || "", testo: n.testo || "",
+    foto: fotoURL(n.foto), galleria: (n.galleria || []).map(fotoURL).filter(Boolean),
+    link: (n.link || []).map(l => ({ url: sicuro(l.url), txt: l.txt || "" })).filter(l => l.url) })));
+  disegnaAtti(d.atti.map(a => ({ data: a.data, tipo: a.tipo || "Atto", titolo: a.titolo, descrizione: a.descrizione || "", esito: a.esito || "", pdf: sicuro(a.pdf) })));
+  impostazioni([["Voce", "Testo"], ...Object.entries(d.impostazioni || {})]);
+  valori([["Valore", "Descrizione", "Proposte"], ...(d.valori || []).map(v => [v.valore, v.descrizione || "", v.proposte || ""])]);
+}
+if (SU_NETLIFY) {
+  let copia = null, mostrato = false;
+  try { copia = JSON.parse(localStorage.getItem("ob-pannello") || "null"); } catch (e) {}
+  if (copia && copia.migrato) { try { usaPannello(copia); mostrato = true; } catch (e) { copia = null; } }
+  if (!mostrato) {
+    document.getElementById("feat").innerHTML = `<p class="empty">Caricamento delle notizie…</p>`;
+    document.getElementById("a-cuore-home").hidden = true;
+  }
+  fetch("/api/pubblico").then(r => { if (!r.ok) throw new Error(r.status); return r.json(); })
+    .then(d => {
+      if (!d.migrato) { if (!mostrato) avviaFogli(); return; }
+      if (copia && copia.aggiornato === d.aggiornato) return;
+      try { localStorage.setItem("ob-pannello", JSON.stringify(d)); } catch (e) {}
+      usaPannello(d);
+    })
+    .catch(() => { if (!mostrato) avviaFogli(); });
+} else avviaFogli();
 
 /* utilità */
 const toast = document.getElementById("toast"); let tt;
