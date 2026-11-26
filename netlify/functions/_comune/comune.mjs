@@ -129,3 +129,44 @@ export function leggiCSV(t) {
   if (c || r.length) { r.push(c); righe.push(r); }
   return righe;
 }
+
+/* ---------- atti: pannello + scheda "ATTI PRESENTATI" del Foglio Google ---------- */
+const FOGLIO_ATTI = "https://docs.google.com/spreadsheets/d/e/2PACX-1vTsbM6PfC3ogxct0drD5LScDCwalsIzkJSF5WmSYBk5A9q34H3upzsd4L56U-12c1CRHMAVyrGDsIVb/pub?gid=487241243&single=true&output=csv";
+export const norm = t => String(t || "").trim().toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "").replace(/\s+/g, " ");
+export function pulisciAtto(a) {
+  return { data: dataISO(a.data), tipo: testo(a.tipo, 80) || "Atto", titolo: testo(a.titolo, 400), descrizione: testo(a.descrizione, 3000), esito: testo(a.esito, 120), pdf: link(a.pdf) };
+}
+export function attiDaCSV(righe) {
+  const [int = [], ...rr] = righe;
+  const col = n => int.findIndex(h => norm(h).startsWith(n));
+  const k = { data: col("data"), tipo: col("tipo"), titolo: col("titolo"), descrizione: col("descr"), esito: col("esito"), pdf: col("link") >= 0 ? col("link") : col("pdf") };
+  return rr.map(r => {
+    const g = i => i >= 0 ? (r[i] || "").trim() : "";
+    const a = pulisciAtto({ data: g(k.data), tipo: g(k.tipo), titolo: g(k.titolo), descrizione: g(k.descrizione), esito: g(k.esito), pdf: g(k.pdf) });
+    return a.data && a.titolo ? a : null;
+  }).filter(Boolean);
+}
+/* stesso atto = stessa data e stesso titolo (maiuscole, accenti e punteggiatura non contano) */
+export const chiaveAtto = a => a.data + "|" + slug(a.titolo);
+
+/* legge la scheda del Foglio; se Google non risponde usa l'ultima copia buona */
+export async function attiDalFoglio() {
+  const s = archivio("contenuti");
+  try {
+    const r = await fetch(FOGLIO_ATTI + "&t=" + Date.now(), { redirect: "follow", signal: AbortSignal.timeout(6000) });
+    if (!r.ok) throw new Error(r.status);
+    const t = await r.text();
+    if (/^\s*</.test(t)) throw new Error("risposta non valida");
+    const lista = attiDaCSV(leggiCSV(t)).map((a, i) => ({ ...a, id: "f" + i, origine: "foglio" }));
+    await s.setJSON("atti-foglio", { lista, quando: new Date().toISOString() });
+    return { lista, ok: true };
+  } catch (e) {
+    const c = await s.get("atti-foglio", { type: "json" });
+    return { lista: c ? c.lista : [], ok: false };
+  }
+}
+/* tutti gli atti per il sito: quelli del Foglio + quelli del pannello che non sono già nel Foglio */
+export function uniscitAtti(pannello, foglio) {
+  const nelFoglio = new Set(foglio.map(chiaveAtto));
+  return [...foglio, ...pannello.filter(a => !nelFoglio.has(chiaveAtto(a))).map(a => ({ ...a, origine: "pannello" }))];
+}

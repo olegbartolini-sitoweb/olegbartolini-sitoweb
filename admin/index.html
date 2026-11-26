@@ -393,14 +393,25 @@ function editorNotizia(n) {
 
 /* ================= ATTI ================= */
 SEZIONI.atti = () => {
-  const lista = [...DATI.atti].sort((a, b) => b.data.localeCompare(a.data));
+  const pannello = DATI.atti.map(a => ({ ...a, origine: "pannello" }));
+  const foglio = (DATI.attiFoglio || []).map(a => ({ ...a, origine: "foglio" }));
+  const doppioni = pannello.filter(a => a.doppione).length;
+  const lista = [...pannello.filter(a => !a.doppione), ...foglio].sort((a, b) => b.data.localeCompare(a.data));
   C().innerHTML = `${bannerImporta()}
     <div class="testata"><h2>Atti</h2><button class="btn main" id="nuovo">+ Nuovo atto</button></div>
-    <div class="elenco">${lista.length ? lista.map(a => `<button class="voce" data-id="${esc(a.id)}"><span class="t"><b>${esc(a.titolo)}</b><small>${dataBella(a.data)} · ${esc(a.tipo)}${a.esito ? " · " + esc(a.esito) : ""}</small></span></button>`).join("") : `<p class="vuoto">Nessun atto.</p>`}</div>`;
+    <div class="avviso" style="background:var(--soft);color:var(--ink)"><p>Gli atti si possono inserire <b>qui</b> oppure nella scheda <b>ATTI PRESENTATI</b> del Foglio Google: sul sito compaiono tutti insieme. Quelli segnati «Foglio» si modificano dal Foglio.${DATI.foglioRaggiungibile === false ? " <b>Ora il Foglio non risponde:</b> mostro l'ultima copia letta." : ""}</p>
+      ${doppioni ? `<button class="btn" id="doppi">Togli ${doppioni} ${doppioni === 1 ? "doppione" : "doppioni"}</button>` : ""}</div>
+    <div class="elenco">${lista.length ? lista.map(a => `<button class="voce" ${a.origine === "pannello" ? `data-id="${esc(a.id)}"` : "data-foglio"}><span class="t"><b>${esc(a.titolo)}</b><small>${dataBella(a.data)} · ${esc(a.tipo)}${a.esito ? " · " + esc(a.esito) : ""} · ${a.origine === "foglio" ? "Foglio" : "Pannello"}</small></span></button>`).join("") : `<p class="vuoto">Nessun atto.</p>`}</div>`;
   collegaImporta();
-  C().querySelector(".elenco").onclick = e => { const b = e.target.closest(".voce"); if (b) editorAtto(DATI.atti.find(a => a.id === b.dataset.id)); };
+  C().querySelector(".elenco").onclick = e => {
+    const b = e.target.closest(".voce"); if (!b) return;
+    if (b.hasAttribute("data-foglio")) return avviso("Questo atto è nel Foglio Google: modificalo da lì");
+    editorAtto(DATI.atti.find(a => a.id === b.dataset.id));
+  };
   $("#nuovo").onclick = () => editorAtto(null);
   if (!DATI.migrato) $("#nuovo").disabled = true;
+  const d = $("#doppi");
+  if (d) d.onclick = () => { if (!confirm("Togliere dal pannello gli atti che sono già nel Foglio? Sul sito non cambia nulla.")) return; conAttesa(d, async () => { const r = await api("atti/togli-doppioni", {}); await ricarica(); avviso(`Tolti ${r.tolti} doppioni`); vai("atti"); }); };
 };
 function editorAtto(a) {
   const nuovo = !a;
