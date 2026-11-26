@@ -165,8 +165,25 @@ export async function attiDalFoglio() {
     return { lista: c ? c.lista : [], ok: false };
   }
 }
-/* tutti gli atti per il sito: quelli del Foglio + quelli del pannello che non sono già nel Foglio */
-export function uniscitAtti(pannello, foglio) {
-  const nelFoglio = new Set(foglio.map(chiaveAtto));
-  return [...foglio, ...pannello.filter(a => !nelFoglio.has(chiaveAtto(a))).map(a => ({ ...a, origine: "pannello" }))];
+/* Il Foglio serve per INSERIRE gli atti (comodo quando sono tanti); il pannello per GESTIRLI.
+   Ogni riga nuova del Foglio entra una volta sola nel pannello; da lì in poi si modifica o si
+   elimina solo dal pannello (un atto eliminato non rientra, anche se la riga resta nel Foglio). */
+export function attiNuoviDalFoglio(d, foglio) {
+  const visti = new Set(d.attiVisti || []);
+  const nelPannello = new Set(d.atti.map(chiaveAtto));
+  return foglio.filter(a => !visti.has(chiaveAtto(a)) && !nelPannello.has(chiaveAtto(a)));
+}
+export async function sincronizzaAtti(d) {
+  if (!d.migrato) return 0;
+  const f = await attiDalFoglio();
+  if (!f.ok) return 0;
+  const nuovi = attiNuoviDalFoglio(d, f.lista);
+  const visti = new Set(d.attiVisti || []), primaVisti = visti.size;
+  f.lista.forEach(a => visti.add(chiaveAtto(a)));
+  d.atti.forEach(a => visti.add(chiaveAtto(a)));
+  if (!nuovi.length && visti.size === primaVisti) return 0;
+  nuovi.forEach(({ id, origine, ...a }) => d.atti.push({ ...a, id: nuovoId("a") }));
+  d.attiVisti = [...visti];
+  await scriviDati(d, nuovi.length ? { nome: "Foglio Google" } : null, nuovi.length ? `Ha aggiunto ${nuovi.length} ${nuovi.length === 1 ? "atto" : "atti"} dalla scheda ATTI PRESENTATI` : null);
+  return nuovi.length;
 }

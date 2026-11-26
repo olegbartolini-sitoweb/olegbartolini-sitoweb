@@ -231,7 +231,7 @@ async function avvia() {
   await ricarica();
   vai(location.hash.slice(1) || "notizie");
 }
-async function ricarica() { DATI = await api("dati"); }
+async function ricarica() { DATI = await api("dati"); if (DATI.attiDalFoglio) avviso(`Entrati ${DATI.attiDalFoglio} atti nuovi dal Foglio Google`); }
 
 $("#form-login").addEventListener("submit", async e => {
   e.preventDefault(); const f = e.target, b = f.querySelector("button");
@@ -393,25 +393,23 @@ function editorNotizia(n) {
 
 /* ================= ATTI ================= */
 SEZIONI.atti = () => {
-  const pannello = DATI.atti.map(a => ({ ...a, origine: "pannello" }));
-  const foglio = (DATI.attiFoglio || []).map(a => ({ ...a, origine: "foglio" }));
-  const doppioni = pannello.filter(a => a.doppione).length;
-  const lista = [...pannello.filter(a => !a.doppione), ...foglio].sort((a, b) => b.data.localeCompare(a.data));
+  const lista = [...DATI.atti].sort((a, b) => b.data.localeCompare(a.data));
   C().innerHTML = `${bannerImporta()}
     <div class="testata"><h2>Atti</h2><button class="btn main" id="nuovo">+ Nuovo atto</button></div>
-    <div class="avviso" style="background:var(--soft);color:var(--ink)"><p>Gli atti si possono inserire <b>qui</b> oppure nella scheda <b>ATTI PRESENTATI</b> del Foglio Google: sul sito compaiono tutti insieme. Quelli segnati «Foglio» si modificano dal Foglio.${DATI.foglioRaggiungibile === false ? " <b>Ora il Foglio non risponde:</b> mostro l'ultima copia letta." : ""}</p>
-      ${doppioni ? `<button class="btn" id="doppi">Togli ${doppioni} ${doppioni === 1 ? "doppione" : "doppioni"}</button>` : ""}</div>
-    <div class="elenco">${lista.length ? lista.map(a => `<button class="voce" ${a.origine === "pannello" ? `data-id="${esc(a.id)}"` : "data-foglio"}><span class="t"><b>${esc(a.titolo)}</b><small>${dataBella(a.data)} · ${esc(a.tipo)}${a.esito ? " · " + esc(a.esito) : ""} · ${a.origine === "foglio" ? "Foglio" : "Pannello"}</small></span></button>`).join("") : `<p class="vuoto">Nessun atto.</p>`}</div>`;
+    <div class="avviso" style="background:var(--soft);color:var(--ink)"><p>Se devi inserirne tanti, scrivili nella scheda <b>ATTI PRESENTATI</b> del Foglio Google: entrano qui da soli (subito quando apri il pannello, comunque entro 15 minuti) e da quel momento li modifichi qui come tutti gli altri.</p></div>
+    <input class="cerca" type="search" id="cerca-atti" placeholder="Cerca tra ${lista.length} atti…">
+    <div class="elenco" id="elenco-atti"></div>`;
   collegaImporta();
-  C().querySelector(".elenco").onclick = e => {
-    const b = e.target.closest(".voce"); if (!b) return;
-    if (b.hasAttribute("data-foglio")) return avviso("Questo atto è nel Foglio Google: modificalo da lì");
-    editorAtto(DATI.atti.find(a => a.id === b.dataset.id));
+  const disegnaElenco = q => {
+    q = (q || "").toLowerCase();
+    const v = lista.filter(a => !q || (a.titolo + " " + a.tipo + " " + a.esito).toLowerCase().includes(q));
+    $("#elenco-atti").innerHTML = v.length ? v.map(a => `<button class="voce" data-id="${esc(a.id)}"><span class="t"><b>${esc(a.titolo)}</b><small>${dataBella(a.data)} · ${esc(a.tipo)}${a.esito ? " · " + esc(a.esito) : ""}</small></span></button>`).join("") : `<p class="vuoto">Nessun atto.</p>`;
   };
+  disegnaElenco();
+  $("#cerca-atti").oninput = e => disegnaElenco(e.target.value);
+  $("#elenco-atti").onclick = e => { const b = e.target.closest(".voce"); if (b) editorAtto(DATI.atti.find(a => a.id === b.dataset.id)); };
   $("#nuovo").onclick = () => editorAtto(null);
   if (!DATI.migrato) $("#nuovo").disabled = true;
-  const d = $("#doppi");
-  if (d) d.onclick = () => { if (!confirm("Togliere dal pannello gli atti che sono già nel Foglio? Sul sito non cambia nulla.")) return; conAttesa(d, async () => { const r = await api("atti/togli-doppioni", {}); await ricarica(); avviso(`Tolti ${r.tolti} doppioni`); vai("atti"); }); };
 };
 function editorAtto(a) {
   const nuovo = !a;

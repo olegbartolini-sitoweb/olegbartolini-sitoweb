@@ -4,7 +4,7 @@
 import {
   json, errore, leggiDati, scriviDati, VUOTO, leggiUtenti, salvaUtenti, pubblico, passwordGiusta, nuovaImpronta,
   passwordCasuale, cookieSessione, cookieUscita, chiSei, dalPannello, testo, dataISO, link, fotoOk, slug, nuovoId, leggiCSV,
-  norm, pulisciAtto, attiDalFoglio, chiaveAtto
+  norm, pulisciAtto, sincronizzaAtti
 } from "./_comune/comune.mjs";
 
 const FOGLIO = "https://docs.google.com/spreadsheets/d/e/2PACX-1vTsbM6PfC3ogxct0drD5LScDCwalsIzkJSF5WmSYBk5A9q34H3upzsd4L56U-12c1CRHMAVyrGDsIVb/pub";
@@ -85,10 +85,9 @@ export default async (req) => {
 
   /* --- lettura di tutto --- */
   if (via === "dati" && metodo === "GET") {
-    const d = await leggiDati(), f = await attiDalFoglio();
-    const nelFoglio = new Set(f.lista.map(chiaveAtto));
-    d.atti = d.atti.map(a => ({ ...a, doppione: nelFoglio.has(chiaveAtto(a)) }));
-    return json({ ...d, attiFoglio: f.lista, foglioRaggiungibile: f.ok });
+    const d = await leggiDati();
+    const nuovi = await sincronizzaAtti(d).catch(() => 0);
+    return json({ ...d, attiDalFoglio: nuovi });
   }
 
   if (via === "utenti/elenco") return admin ? json({ utenti: (await leggiUtenti()).map(pubblico) }) : errore("Solo l'amministratore può farlo", 403);
@@ -127,15 +126,6 @@ export default async (req) => {
     if (i >= 0) { a.id = d.atti[i].id; d.atti[i] = a; } else { a.id = nuovoId("a"); d.atti.push(a); }
     await scriviDati(d, io, (i >= 0 ? "Ha modificato l'atto «" : "Ha aggiunto l'atto «") + a.titolo + "»");
     return json({ atto: a });
-  }
-  if (via === "atti/togli-doppioni") {
-    const d = await leggiDati(), f = await attiDalFoglio();
-    if (!f.ok) return errore("Il Foglio Google non risponde: riprova tra poco", 502);
-    const nelFoglio = new Set(f.lista.map(chiaveAtto)), prima = d.atti.length;
-    d.atti = d.atti.filter(a => !nelFoglio.has(chiaveAtto(a)));
-    const tolti = prima - d.atti.length;
-    if (tolti) await scriviDati(d, io, `Ha tolto ${tolti} atti doppi (già presenti nel Foglio)`);
-    return json({ tolti });
   }
   if (via === "atto/elimina") {
     const d = await leggiDati(); const a = d.atti.find(x => x.id === corpo.id);
@@ -208,10 +198,11 @@ export default async (req) => {
     d.registro = attuali.registro || [];
     try {
       d.notizie = notizieDaFoglio(await scaricaFoglio(GID.notizie)).map(n => ({ ...n, creato: new Date().toISOString(), autore: "Foglio Google" }));
-      d.atti = []; /* gli atti restano nel Foglio: il sito li legge da lì, niente doppioni */
+      d.atti = []; /* gli atti entrano dal Foglio da soli subito dopo (sincronizzaAtti) */
       for (const g of GID.altri) altriDaFoglio(await scaricaFoglio(g), d);
     } catch (e) { return errore("Importazione non riuscita: " + e.message, 502); }
-    await scriviDati(d, io, `Ha importato dal Foglio Google ${d.notizie.length} notizie, ${d.atti.length} atti e ${d.valori.length} valori`);
+    await scriviDati(d, io, `Ha importato dal Foglio Google ${d.notizie.length} notizie e ${d.valori.length} valori`);
+    await sincronizzaAtti(d).catch(() => 0);
     return json({ notizie: d.notizie.length, atti: d.atti.length, valori: d.valori.length, testi: Object.keys(d.impostazioni).length });
   }
 
